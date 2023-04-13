@@ -1,0 +1,65 @@
+{% extends "qna/admin-base.html" %}
+{% block title %}<title>All Categories | Q&amp;A</title>{% endblock title %}
+{% block content %}
+<!-- <ul class="list-group a_lists mg-center">
+  <h1>Categories</h1>
+  {% for category in categories %}
+  <li class="list-group-item" style="border-radius: 10px;">
+    <span class="h3" style="color:aliceblue;">{{category.category}}------{{category.role.role}}</span>
+    <div class="float-right" role="group" aria-label="Basic example">
+      <a type="button" href="{% url 'question-editcategory' category.slug %}" class="btn btn-secondary" style="color:greenyellow">Edit</a>
+      <a type="button" href="{% url 'question-deletecategory' category.slug %}"
+        class="btn btn-danger" style="color: #e1f434;">Delete</a>
+    </div>
+  </li>
+  {% endfor %}
+</ul> -->
+<div class="container">
+  <div class="card-cntent">
+    <div class="card" style="background-color:#6f23ad ;">
+    <h1 class="text-center text-white">Categories</h1>
+  <table class="table mt-4 text-white table-striped">
+    <thead class="thead-light">
+      <tr>
+        <th scope="col">id</th>
+        <th scope="col">Category</th>
+        <th scope="col">Role</th>
+        <th scope="col">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for category in categories %}
+      <tr>
+        <th scope="row">{{ forloop.counter }}</th>
+        <td>{{category.category}}</td>
+        <td>{{category.role.role}}</td>
+        <td>
+          <a href="{% url 'question-editcategory' category.slug %}" class="btn btn-success" ><i class="fa fa-edit" aria-hidden="true"></i></a>
+          <a href="#" data-url="{% url 'question-deletecategory' category.slug %}" class="btn btn-danger delete"><i class="fa fa-trash" aria-hidden="true"></i></a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+    </div>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  $(document).ready(function(){
+    $(document).on('click','.delete',function(e){
+     Swal.fire({
+  title: 'Do you want to Delete?',
+  showCancelButton: true,
+  confirmButtonText: 'Delete',
+}).then((result) => {
+  /* Read more about isConfirmed, isDenied below */
+  if (result.isConfirmed) {
+    Swal.fire('Deleted!', '', 'success')
+    var nurl=$(this).attr("data-url");
+    window.location.href=nurl;
+  }
+})
+    });
+  });
+</script>
+{% endblock content %}

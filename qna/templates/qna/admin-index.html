@@ -1,0 +1,50 @@
+{% extends "qna/admin-base.html" %}
+{% block title %}<title>Admin | Q&amp;A</title>{% endblock title %}
+{% block head %}
+<script>
+    $(document).ready(function () {
+        $('button').click(function (event) {
+            event.preventDefault();
+        });
+        $(".solvedbtn").click(function (event) {
+            event.preventDefault();
+            id = $(this).data("feedback-id");
+            self = this;
+            $.ajax({
+                type: "POST",
+                url: '{% url 'question-feedback-resolved' %}',
+                data: { 'id': id },
+                dataType: 'json',
+                success: function (data) {
+                    if (data.resolved) {
+                        $(self).remove();
+                    }
+                    else {
+                        alert(data.error);
+                    }
+                }
+			});
+    });
+});
+</script>
+{% endblock head %}
+{% block content %}
+{% for feedback in feedbacks %}
+<div class="card mt-3">
+    <div class="card-body">
+        <div class="card-text">{{feedback.feedback}}</div>
+    </div>
+    <div class="card-footer">
+        <form>
+            {% csrf_token %}
+            <button type="button" class="btn btn-outline-warning btn-sm solvedbtn" data-feedback-id="{{feedback.id}}">
+                <i class="fas fa-check"></i>
+            </button>
+        </form>
+        <div class="float-right">
+            at {{feedback.created_at}}
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock content %}

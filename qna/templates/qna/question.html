@@ -1,0 +1,682 @@
+{% extends "qna/base.html" %}
+{% block title %}<title>{{question.question}} | Q&amp;A</title>{% endblock title %}
+{% block head %}
+<script>
+	$(document).ready(function () {
+		$('button').click(function (event) {
+			event.preventDefault();
+		});
+		$("input:not([type*=hidden])").val("");
+		$("#searchinputbtn").val("Submit");
+		$("#flagbtn").click(function (event) {
+			event.preventDefault();
+			$.ajax({
+				type: "POST",
+				url: '{% url 'question-flag' question.id %}',
+				dataType: 'json',
+				success: function (data) {
+					if (data.flag) {
+						alert("Flag Added Succesfully");
+						$("#flagbtn").removeClass("btn-outline-secondary");
+						$("#flagbtn").addClass("btn-secondary");
+						$("#flagbtn").attr("title", "Unflag");
+					}
+					else if (data.unflag) {
+						alert("Flag Removed Succesfully");
+						$("#flagbtn").removeClass("btn-secondary");
+						$("#flagbtn").addClass("btn-outline-secondary");
+						$("#flagbtn").attr("title", "Flag");
+						$("#holdbtn").remove();
+						$("#modalclosebtn").remove();
+					}
+					else {
+						alert(data.error);
+					}
+				}
+			});
+	});
+	{% if isFlag %}
+	$("#holdbtn").click(function (event) {
+		event.preventDefault();
+		$.ajax({
+			type: "POST",
+			url: '{% url 'question-hold' question.id %}',
+			dataType: 'json',
+			success: function (data) {
+				if (data.onhold) {
+					alert("Put on hold");
+					$("#holdbtn").removeClass("btn-outline-secondary");
+					$("#holdbtn").addClass("btn-secondary");
+					$("#holdbtn").attr("title", "Unflag");
+				}
+				else if (data.unflag) {
+					alert("Flag Removed Succesfully");
+					$("#flagbtn").removeClass("btn-secondary");
+					$("#flagbtn").addClass("btn-outline-secondary");
+					$("#flagbtn").attr("title", "Flag");
+					$("#holdbtn").remove();
+					$("#modalclosebtn").remove();
+				}
+				else {
+					alert(data.error);
+				}
+			}
+		});
+	});
+	{% endif %}
+	{% if isFlag and not isClose %}
+	$("#closebtn").click(function (event) {
+		event.preventDefault();
+		const reason = $("#reason").val();
+		$.ajax({
+			type: "POST",
+			data: { 'reason': reason },
+			url: '{% url 'question-close' question.id %}',
+			dataType: 'json',
+			success: function (data) {
+				if (data.close) {
+					alert("Question Closed Succesfully");
+					$("#modalclosebtn").removeClass("btn-outline-secondary");
+					$("#modalclosebtn").addClass("btn-secondary");
+					$("#modalclosebtn").attr("title", "Unflag");
+					$("#holdbtn").remove();
+				}
+				else {
+					alert(data.error);
+				}
+			}
+					});
+			});
+	{% else %}
+	$("#openbtn").click(function (event) {
+		event.preventDefault();
+		const reason = $("#reason").val();
+		$.ajax({
+			type: "POST",
+			url: '{% url 'question-close' question.id %}',
+			dataType: 'json',
+			success: function (data) {
+				if (data.unflag) {
+					alert("Flag Removed Succesfully");
+					$("#flagbtn").removeClass("btn-secondary");
+					$("#flagbtn").addClass("btn-outline-secondary");
+					$("#flagbtn").attr("title", "Flag");
+					$("#openbtn").remove();
+				}
+				else {
+					alert(data.error);
+				}
+			}
+					});
+			});
+	{% endif %}
+	{% if user.is_authenticated %}
+	$("#qcommentsubmitbtn").click(function (event) {
+		event.preventDefault();
+		$.ajax({
+			type: "POST",
+			url: '{% url 'question-comment-add' question.id %}',
+			data: { 'qcomment': $("#qcomment").val() },
+			dataType: 'json',
+			success: function (data) {
+				if (data.added) {
+					$("#qcommentcontainer .list-group").append('<li class="list-group-item">' + data.comment + ' <a href="" class="text-reset">@' + data.username + '</a> at ' + data.created_at + '</li>');
+					$("#qcomment").val("");
+				}
+				else if (data.error) {
+					alert(data.error);
+				}
+			}
+		});
+	});
+	$(".qcommentdelete").click(function (event) {
+		event.preventDefault();
+		self = this;
+		$.ajax({
+			type: "POST",
+			url: '{% url 'question-deleteqcomment' %}',
+			data: { 'qcommentid': $(this).data("qcommentid") },
+			dataType: 'json',
+			success: function (data) {
+				if (data.deleted) {
+					$(self).parent().hide();
+				}
+				else if (data.error) {
+					alert(data.error);
+				}
+			}
+		});
+	});
+	$(".acommentdelete").click(function (event) {
+		event.preventDefault();
+		self = this;
+		$.ajax({
+			type: "POST",
+			url: '{% url 'question-deleteacomment' %}',
+			data: { 'acommentid': $(this).data("acommentid") },
+			dataType: 'json',
+			success: function (data) {
+				if (data.deleted) {
+					$(self).parent().hide();
+				}
+				else if (data.error) {
+					alert(data.error);
+				}
+			}
+		});
+	});
+
+	$(".acommentsubmitbtn").click(function (event) {
+		event.preventDefault();
+		$answerid = $(this).data("answerid");
+		$acomment = $("[data-answer-comment-input=" + $answerid + "]").val();
+		$acommentlist = $("[data-answer-comment-list=" + $answerid + "]");
+		$.ajax({
+			type: "POST",
+			url: '{% url 'question-answer-comment-add' question.id %}',
+			data: { 'acomment': $acomment, 'answerid': $answerid },
+			dataType: 'json',
+			success: function (data) {
+				if (data.added) {
+					$("[data-answer-comment-input=" + $answerid + "]").val('');
+					$($acommentlist).append('<li class="list-group-item">' + data.comment + ' <a href="" class="text-reset">' + data.username + '</a> at ' + data.created_at + '</li>');
+				}
+				else if (data.error) {
+					alert(data.error);
+				}
+			}
+		});
+	});
+	$(".question-upvote").click(function (event) {
+		event.preventDefault();
+		$questionvotemanager = $(".questionvotemanager");
+		$virtualvote = +($($questionvotemanager).text());
+		$vote = $($questionvotemanager).data("question-vote");
+		$downvotebtn = $(this).next();
+		$current = this;
+		if ($virtualvote == $vote) {
+			$votescore = 1;
+			$totalvote = $virtualvote + $votescore;
+			$.ajax({
+				type: "POST",
+				url: '{% url 'question-questionvotemanager' question.id %}',
+				data: { 'totalvote': $totalvote },
+				dataType: 'json',
+				success: function (data) {
+					if (data.voted) {
+						$($questionvotemanager).text($totalvote);
+						$($questionvotemanager).addClass("bg-warning");
+						$($current).attr("disabled", true);
+						$($downvotebtn).attr("disabled", false);
+						$($questionvotemanager).removeClass("bg-danger");
+					}
+					else if (data.error) {
+						alert(data.error);
+					}
+				}
+			});
+		}
+		else if ($virtualvote > $vote) {
+		alert("Already voted");
+	}
+	else {
+		$votescore = 2;
+		$totalvote = $virtualvote + $votescore;
+		$.ajax({
+			type: "POST",
+			url: '{% url 'question-questionvotemanager' question.id %}',
+			data: { 'totalvote': $totalvote },
+			dataType: 'json',
+			success: function (data) {
+				if (data.voted) {
+					$($questionvotemanager).text($totalvote);
+					$($questionvotemanager).addClass("bg-warning");
+					$($current).attr("disabled", true);
+					$($downvotebtn).attr("disabled", false);
+					$($questionvotemanager).removeClass("bg-danger");
+				}
+				else if (data.error) {
+					alert(data.error);
+				}
+			}
+			});
+		}
+	});
+
+	$(".question-downvote").click(function (event) {
+		event.preventDefault();
+		$questionvotemanager = $(".questionvotemanager");
+		$virtualvote = +($($questionvotemanager).text());
+		$vote = $($questionvotemanager).data("question-vote");
+		$upvotebtn = $(this).prev();
+		$current = this;
+		if ($virtualvote == $vote) {
+			$votescore = -1;
+			$totalvote = $virtualvote + $votescore
+			$.ajax({
+				type: "POST",
+				url: '{% url 'question-questionvotemanager' question.id %}',
+				data: { 'totalvote': $totalvote },
+				dataType: 'json',
+				success: function (data) {
+					if (data.voted) {
+						$($questionvotemanager).text($totalvote);
+						$($questionvotemanager).addClass("bg-danger");
+						$($current).attr("disabled", true);
+						$($upvotebtn).attr("disabled", false);
+						$($questionvotemanager).removeClass("bg-warning");
+					}
+					else if (data.error) {
+						alert(data.error);
+					}
+				}
+			});
+		}
+		else if ($virtualvote < $vote) {
+		alert("Already voted");
+	}
+	else {
+		$votescore = -2;
+		$totalvote = $virtualvote + $votescore
+		$.ajax({
+			type: "POST",
+			url: '{% url 'question-questionvotemanager' question.id %}',
+			data: { 'totalvote': $totalvote },
+			dataType: 'json',
+			success: function (data) {
+				if (data.voted) {
+					$($questionvotemanager).text($totalvote);
+					$($current).attr("disabled", true);
+					$($upvotebtn).attr("disabled", false);
+					$($questionvotemanager).addClass("bg-danger");
+					$($questionvotemanager).removeClass("bg-warning");
+				}
+				else if (data.error) {
+					alert(data.error);
+				}
+			}
+			});
+		}
+	});
+	$(".answer-upvote").click(function (event) {
+		event.preventDefault();
+		$answervotemanager = $(this).siblings('span')[0];
+		$virtualvote = +($($answervotemanager).text());
+		$vote = $($answervotemanager).data("answer-vote");
+		$answerid = $($answervotemanager).data("answer-id");
+		$downvotebtn = $(this).next();
+		$current = this;
+		if ($virtualvote == $vote) {
+			$votescore = 1;
+			$totalvote = $virtualvote + $votescore;
+			$.ajax({
+				type: "POST",
+				url: '{% url 'question-answervotemanager' %}',
+				data: { 'totalvote': $totalvote, 'answerid': $answerid },
+				dataType: 'json',
+				success: function (data) {
+					if (data.voted) {
+						$($answervotemanager).text($totalvote);
+						$($answervotemanager).addClass("bg-warning");
+						$($current).attr("disabled", true);
+						$($downvotebtn).attr("disabled", false);
+						$($answervotemanager).removeClass("bg-danger");
+					}
+					else if (data.error) {
+						alert(data.error);
+					}
+				}
+					});
+				}
+		else if ($virtualvote > $vote) {
+		alert("Already voted");
+	}
+	else {
+		$votescore = 2;
+		$totalvote = $virtualvote + $votescore;
+		$.ajax({
+			type: "POST",
+			url: '{% url 'question-answervotemanager' %}',
+			data: { 'totalvote': $totalvote, 'answerid': $answerid },
+			dataType: 'json',
+			success: function (data) {
+				if (data.voted) {
+					$($answervotemanager).text($totalvote);
+					$($answervotemanager).addClass("bg-warning");
+					$($current).attr("disabled", true);
+					$($downvotebtn).attr("disabled", false);
+					$($answervotemanager).removeClass("bg-danger");
+				}
+				else if (data.error) {
+					alert(data.error);
+				}
+			}
+			});
+		}
+	});
+	$(".answer-downvote").click(function (event) {
+		event.preventDefault();
+		$answervotemanager = $(this).siblings('span')[0];
+		$virtualvote = +($($answervotemanager).text());
+		$vote = $($answervotemanager).data("answer-vote");
+		$answerid = $($answervotemanager).data("answer-id");
+		$upvotebtn = $(this).prev();
+		$current = this;
+		if ($virtualvote == $vote) {
+			$votescore = -1;
+			$totalvote = $virtualvote + $votescore
+			$.ajax({
+				type: "POST",
+				url: '{% url 'question-answervotemanager' %}',
+				data: { 'totalvote': $totalvote, 'answerid': $answerid },
+				dataType: 'json',
+				success: function (data) {
+					if (data.voted) {
+						$($answervotemanager).text($totalvote);
+						$($answervotemanager).addClass("bg-danger");
+						$($current).attr("disabled", true);
+						$($upvotebtn).attr("disabled", false);
+						$($answervotemanager).removeClass("bg-warning");
+					}
+					else if (data.error) {
+						alert(data.error);
+					}
+				}
+					});
+				}
+		else if ($virtualvote < $vote) {
+		alert("Already voted");
+	}
+	else {
+		$votescore = -2;
+		$totalvote = $virtualvote + $votescore
+		$.ajax({
+			type: "POST",
+			url: '{% url 'question-answervotemanager' %}',
+			data: { 'totalvote': $totalvote, 'answerid': $answerid },
+			dataType: 'json',
+			success: function (data) {
+				if (data.voted) {
+					$($answervotemanager).text($totalvote);
+					$($current).attr("disabled", true);
+					$($upvotebtn).attr("disabled", false);
+					$($answervotemanager).addClass("bg-danger");
+					$($answervotemanager).removeClass("bg-warning");
+				}
+				else if (data.error) {
+					alert(data.error);
+				}
+			}
+			});
+		}
+	});
+	{% else %}
+	$("#flagbtn").click(function (event) {alert("Please login to perform this.")})
+	$("#holdbtn").click(function (event) {alert("Please login to perform this.")})
+	$("#qcommentsubmitbtn").click(function (event) {alert("Please login to perform this.")})
+	$(".qcommentdelete").click(function (event) {alert("Please login to perform this.")})
+	$(".acommentdelete").click(function (event) {alert("Please login to perform this.")})
+	$(".acommentsubmitbtn").click(function (event) {alert("Please login to perform this.")})
+	$(".question-upvote").click(function (event) {alert("Please login to perform this.")})
+	$(".question-downvote").click(function (event) {alert("Please login to perform this.")})
+	$(".answer-upvote").click(function (event) {alert("Please login to perform this.")})
+	$(".answer-downvote").click(function (event) {alert("Please login to perform this.")})
+	{% endif %}
+	$("#qcommentbtn").click(function () {
+		$("#qcommentcontainer").fadeToggle("slow");
+	});
+	$(".acommentbtn").click(function (event) {
+		$(".acommentcontainer").fadeToggle("slow");
+	});
+	$("#qcommentcontainer").hide();
+	$(".acommentcontainer").hide();
+	$("[data-toggle=popover]").popover({ html: true });
+	});
+</script>
+{% endblock head %}
+{% block content %}
+<form method="post">
+	{% csrf_token %}
+	{% if isFlag and not isClose %}
+	<div class="modal fade" id="reasonModal" tabindex="-1" role="dialog" aria-labelledby="reasonModalLabel"
+		aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="reasonModalLabel">Specify reason to close the question</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="form-group">
+						<label for="reason">Reason</label>
+						<input type="text" name="reason" class="form-control" id="reason" aria-describedby="reasonHelp"
+							placeholder="Enter reason" required maxlength="100">
+						<small id="reasonHelp" class="form-text text-muted">Why closing this question.Duplicate,off
+							topic,no response from long time ?</small>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-success" data-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-primary" id="closebtn">Submit</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	{% endif %}
+</form>
+<form method="post">
+	{% csrf_token %}
+	<div class="card">
+		<div class="card-header"  style="background-color: #9C19E0;">
+			<ul class="list-inline">
+				{% for category in questionscategories %}
+				<li class="list-inline-item badge badge-primary badge-pills"><a
+						href="{% url 'question-categorywise' category.slug %}" class="text-reset">{{category}}</a></li>
+				{% endfor %}
+				{% if isFlag %}<i class="far fa-flag"></i>{% endif %}
+				{% if isHold%}<i class="far fa-pause-circle"></i>{% endif %}
+				{% if isClose %}<i class="fas fa-times"></i>{% endif %}
+				{% if not isHold and not isClose and not question.user.username == user.username %}<li
+					class="list-inline-item float-right"><a class="btn btn-primary btn-sm"
+						href="{% url 'question-answer-add' question.id %}">Answer a question</a></li>{% endif %}
+			</ul>
+		</div>
+		<div class="card-body">
+			<h1>{{question.question}}</h1>
+			<div class="float-right btn-group" role="group">
+				{% if hasRole %}
+				<button
+					class="btn {% if isFlag %}btn-secondary flagged{% else %}btn-primary{% endif %}  btn-sm"
+					title="{% if isFlag %}Unflag{% else %}Flag{% endif %}" id="flagbtn"><i
+						class="far fa-flag"></i></button>
+				{% if isFlag and not isClose %}<button
+					class="btn {% if isHold %}btn-secondary holded{% else %}btn-primary{% endif %}  btn-sm"
+					title="{% if isHold %}Unflag{% else %}Put on hold{% endif %}" id="holdbtn"><i
+						class="far fa-pause-circle"></i></button>{%endif%}
+				{% if isFlag %}<button
+					class="btn {% if isClose %}btn-secondary closed{% else %}btn-primary{% endif %}  btn-sm"
+					title="{% if isClose %}Open{% else %}Close{% endif %}" {% if isClose %}id="openbtn"
+					{% else %}data-toggle="modal" data-target="#reasonModal" id="modalclosebtn" {% endif %}><i
+						class="fas fa-times"></i></button>{%endif%}
+				{% endif %}
+				{% if question.user.username == user.username or hasRole%}
+				<a href="{% url 'question-edit' question.id %}" class="btn btn-primary  btn-sm"
+					title="Edit a question"><i class="far fa-edit"></i></a>
+				{% endif %}
+				{% if question.user.username == user.username or user.is_staff%}
+				<a data-url="{% url 'question-delete' question.id %}" class="btn btn-primary delete-qna btn-sm"
+					title="Delete a question"><i class="far fa-trash-alt"></i></a>
+				{% endif %}
+
+				<button class="btn btn-primary btn-sm" title="Edit Users" data-container="body" data-toggle="popover"
+					data-placement="top"
+					data-content='{% if question.edit_user %} {% for edituser in question.edit_user.all %}<a href="{% url "qna-user" edituser.id %}" class="text-reset">@{{edituser.username}}</a>{% endfor %}{% endif %}'>Edited
+					by</button>
+			</div>
+		</div>
+		<div class="card-footer" style="background-color: #9C19E0; color:white">
+			<button type="button" class="btn btn-primary btn-sm question-upvote">
+				<i class="fas fa-arrow-up"></i>
+			</button>
+			<button type="button" class="btn btn-primary btn-sm question-downvote">
+				<i class="fas fa-arrow-down"></i>
+			</button>
+			<span data-question-vote="{{question.vote}}" class="questionvotemanager">{{question.vote}}</span>
+			<button type="button" class="btn btn-primary tn-sm" id="qcommentbtn">Comment
+			</button>
+			<div class="float-right">
+				<a href="{% url 'qna-user' question.user.id %}" class="text-reset">@{{question.user.username}}</a>
+				at {{question.created_at}}
+			</div>
+		</div>
+	</div>
+</form>
+<div class="card my-3" id="qcommentcontainer">
+	<div class="card-header" style="background-color: #9C19E0;">
+		Comment
+	</div>
+	<div class="card-body" >
+		<ul class="list-group">
+			{% if question.qcomment_set.all %}
+			{% for comment in question.qcomment_set.all %}
+			<li class="list-group-item">{{comment.qcomment}}
+				<a href="{% url 'qna-user' question.user.id %}" class="text-reset">@{{comment.user.username}}</a> at
+				{{comment.created_at}}
+				{% if comment.user.username == user.username or hasRole%}
+				<button class="btn btn-primary  btn-sm qcommentdelete" title="Delete comment"
+					data-qcommentid="{{comment.id}}"><i class="far fa-trash-alt"></i></button>
+				{% endif %}
+			</li>
+			{% endfor %}
+			{% else %}
+			<div class="alert alert-info" role="alert">Be the first to comment</div>
+			{% endif %}
+		</ul>
+		<form method="post" class="my-3">
+			{% csrf_token %}
+			<div class="row">
+				<div class="col-auto">
+					<input type="text" class="form-control" id="qcomment" name="qcomment" placeholder="Comment here">
+				</div>
+				<div class="col-auto">
+					<button class="btn btn-primary" id="qcommentsubmitbtn">Submit</button>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+{% if  question.answer_set.all %}
+{% for answer in question.answer_set.all %}
+<div class="card my-3">
+	<div class="card-body ">
+		<div class="clearfix">{{answer.answer|safe}}</div>
+		<div class="float-right btn-group" role="group">
+			{% if answer.user.username == user.username or hasRole%}
+			<a href="{% url 'question-answer-edit' answer.id %}" class="btn btn-primary  btn-sm"
+				title="Edit an answer"><i class="far fa-edit"></i></a>
+			<a data-url="{% url 'question-answer-delete' answer.id %}" class="btn btn-primary delete  btn-sm"
+				title="Delete an answer"><i class="far fa-trash-alt"></i></a>
+			{% endif %}
+			<button class="btn btn-primary btn-sm" title="Edit Users" data-container="body" data-toggle="popover"
+				data-placement="top"
+				data-content='{% if answer.edit_user %} {% for edituser in answer.edit_user.all %}<a href="{% url "qna-user" edituser.id %}" class="text-reset">@{{edituser.username}}</a>{% endfor %}{% endif %}'>Edited
+				by</button>
+		</div>
+	</div>
+	<div class="card-footer"  style="background-color: #9C19E0; color:white;">
+		<button type="button" class="btn btn-primary btn-sm answer-upvote">
+			<i class="fas fa-arrow-up"></i>
+		</button>
+		<button type="button" class="btn btn-primary btn-sm answer-downvote">
+			<i class="fas fa-arrow-down"></i>
+		</button>
+		<span data-answer-vote="{{answer.vote}}" data-answer-id="{{answer.id}}"
+			class="answervotemanager">{{answer.vote}}</span>
+		<button type="button" class="btn btn-primary btn-sm acommentbtn">Comment
+		</button>
+		<div class="float-right text-white">
+			<a href="{% url 'qna-user' answer.user.id %}" class="text-reset">@{{answer.user.username}}</a>
+			at {{answer.created_at}}
+		</div>
+	</div>
+</div>
+<div class="card my-3 acommentcontainer">
+	<div class="card-header">
+		Comment
+	</div>
+	<div class="card-body">
+		<ul class="list-group" data-answer-comment-list="{{answer.id}}">
+			{% if answer.acomment_set.all %}
+			{% for comment in answer.acomment_set.all %}
+			<li class="list-group-item">{{comment.acomment}}
+				<a href="{% url 'qna-user' comment.user.id %}" class="text-reset">@{{comment.user.username}}</a> at
+				{{comment.created_at}}
+				{% if comment.user.username == user.username or hasRole%}
+				<button class="btn btn-primary  btn-sm acommentdelete" title="Delete comment"
+					data-acommentid="{{comment.id}}"><i class="far fa-trash-alt"></i></button>
+				{% endif %}
+			</li>
+			{% endfor %}
+			{% else %}
+			<div class="alert alert-info" role="alert">Be the first to comment</div>
+			{% endif %}
+		</ul>
+		<form method="post" class="my-3">
+			{% csrf_token %}
+			<div class="row">
+				<div class="col-auto">
+					<input type="text" class="form-control acomment" data-answer-comment-input={{answer.id}}
+						name="acomment" placeholder="Comment here">
+				</div>
+				<div class="col-auto">
+					<button class="btn btn-primary acommentsubmitbtn" data-answerid="{{answer.id}}">Submit</button>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+{% endfor %}
+{% else %}
+<div class="display-3">No answer found</div>
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  $(document).ready(function(){
+    $(document).on('click','.delete',function(e){
+     Swal.fire({
+  title: 'Do you want to Delete?',
+  showCancelButton: true,
+  confirmButtonText: 'Delete',
+}).then((result) => {
+  /* Read more about isConfirmed, isDenied below */
+  if (result.isConfirmed) {
+    Swal.fire('Deleted!', '', 'success')
+    var nurl=$(this).attr("data-url");
+    window.location.href=nurl;
+  }
+})
+    });
+  });
+</script>
+<script>
+	$(document).ready(function(){
+	  $(document).on('click','.delete-qna',function(e){
+	   Swal.fire({
+	title: 'Do you want to Delete?',
+	showCancelButton: true,
+	confirmButtonText: 'Delete',
+  }).then((result) => {
+	/* Read more about isConfirmed, isDenied below */
+	if (result.isConfirmed) {
+	  Swal.fire('Deleted!', '', 'success')
+	  var nurl=$(this).attr("data-url");
+	  window.location.href=nurl;
+	}
+  })
+	  });
+	});
+  </script>
+{% endblock content%}

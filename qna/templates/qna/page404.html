@@ -1,0 +1,9 @@
+{% extends "qna/base.html" %}
+{% block title %}<title>404 Page not found | Q&amp;A</title>{% endblock title %}
+{% block content %}
+<div class="page404">
+    <h1 class="display-2">Lost your way</h1>
+    <p class="display-4">Sorry we cant find page.</p>
+    <a href="{% url 'qna-home' %}" class="btn btn-primary btn-lg">QNA Home</a>
+</div>
+{% endblock content %}

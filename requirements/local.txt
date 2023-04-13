@@ -1,0 +1,10 @@
+-r base.txt
+# Code quality
+black==22.10.0 # https://github.com/psf/black
+django-stubs==1.12.0  # https://github.com/typeddjango/django-stubs
+djangorestframework-stubs==1.7.0  # https://github.com/typeddjango/djangorestframework-stubs
+flake8==5.0.4  # https://github.com/PyCQA/flake8
+flake8-isort==5.0.0  # https://github.com/gforcada/flake8-isort
+mypy # https://github.com/python/mypy
+pre-commit==2.20.0  # https://github.com/pre-commit/pre-commit
+commitizen==2.35.0 # https://github.com/commitizen-tools/commitizen

@@ -1,0 +1,20 @@
+{% extends "qna/base.html" %}
+{% block title %}<title>Send Feedback | Q&amp;A</title>{% endblock title %}
+{% block content %}
+<form action="" method="post" class="mg-center">
+  <h1 class="">Send Feedback</h1>
+  {% csrf_token %}
+  <div class="form-group">
+    <label for="feedback" class="label">Feedback </label>
+    <textarea type="text" name="feedback" class="form-control" id="feedback" aria-describedby="feedbackHelp"
+      placeholder="Enter feedback" required maxlength="3000">
+    </textarea>
+    <small id="feedbackHelp" class="help_text">Keep max 3000 character longer</small>
+  </div>
+  {% if error %}
+  <div class="text-warning">{{error}}</div>
+  {% else %}
+  {% endif %}
+  <button type="submit" class="btn btn-primary w-25">Submit</button>
+</form>
+{% endblock content %}

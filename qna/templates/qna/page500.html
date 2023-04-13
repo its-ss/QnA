@@ -1,0 +1,9 @@
+{% extends "qna/base.html" %}
+{% block title %}<title>500 Server Error | Q&amp;A</title>{% endblock title %}
+{% block content %}
+<div class="page404">
+    <h1 class="display-2">Sorry for trouble</h1>
+    <p class="display-4">Something is wrong with us.Please try again later and contact us.</p>
+    <a href="{% url 'qna-home' %}" class="btn btn-primary btn-lg">QNA Home</a>
+</div>
+{% endblock content %}

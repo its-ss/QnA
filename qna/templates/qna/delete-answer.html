@@ -1,0 +1,19 @@
+{% extends "qna/base.html" %}
+{% load static %}
+{% block title %}<title>Delete answer | Q&amp;A</title>{% endblock title %}
+{% block head %}
+<style>
+    .card-answer-body {
+        max-height: 240px;
+    }
+</style>
+{% endblock head %}
+{% block content %}
+<form method="post" class="mg-center">
+    {% csrf_token %}
+    <div class="text-muted display-4">Are you sure you want to delete</div>
+    <div class="card-answer-body overflow-auto">{{answer.answer|safe}}</div>
+    <input type="submit" name="yes" value="Yes" class="btn mt-4 px-5 btn-danger">
+    <input type="submit" name="no" value="No" class="btn mt-4 px-5 btn-light">
+</form>
+{% endblock content %}

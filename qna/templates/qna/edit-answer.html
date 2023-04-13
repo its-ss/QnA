@@ -1,0 +1,57 @@
+{% extends "qna/base.html" %}
+{% load static %}
+{% block title %}<title>Edit answer | Q&amp;A</title>{% endblock title %}
+{% block head %}
+<script src="{% static "qna/ckeditor/ckeditor.js" %}"></script>
+{% endblock head %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <ul class="list-inline">
+            {% for category in answer.question.category.all %}
+            <li class="list-inline-item badge badge-primary badge-pills">{{category}}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="card-body">
+        <h1>{{answer.question.question}}</h1>
+    </div>
+</div>
+<form action="" method="post">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="answer" class="label">Answer</label>
+        <textarea name="answer" id="answer" rows="10" cols="80" class="form-control" placeholder="Answer goes here"
+            required>{% if updated_answer %}{{updated_answer|safe}}{% else %}{{answer.answer|safe}}{% endif %}</textarea>
+        <script>
+            CKEDITOR.replace('answer');
+        </script>
+        <script>
+            CKEDITOR.replace('answer', {
+                toolbarGroups =[
+                    { name: 'basicstyles', groups: ['basicstyles', 'cleanup'] },
+                    { name: 'links', groups: ['links'] },
+                    { name: 'paragraph', groups: ['list', 'indent', 'blocks', 'align', 'bidi', 'paragraph'] },
+                    { name: 'insert', groups: ['insert'] },
+                    { name: 'editing', groups: ['find', 'selection', 'spellchecker', 'editing'] },
+                    { name: 'clipboard', groups: ['clipboard', 'undo'] },
+                    { name: 'forms', groups: ['forms'] },
+                    { name: 'tools', groups: ['tools'] },
+                    { name: 'document', groups: ['mode', 'document', 'doctools'] },
+                    { name: 'others', groups: ['others'] },
+                    { name: 'styles', groups: ['styles'] },
+                    { name: 'colors', groups: ['colors'] },
+                    { name: 'about', groups: ['about'] }
+                ];
+                removeButtons = 'Underline,Subscript,Superscript,Cut,Copy,Paste,PasteText,PasteFromWord,Scayt,Source,About';
+            });
+        </script>
+        <a href="{% static "qna/Imgur-Upload-master/imgur-upload.html" %}" class="label" target="_blank">Upload
+            image from device</a>
+    </div>
+    {% if error %}
+    <div class="text-danger">{{error}}</div>
+    {% endif %}
+    <button type="submit" class="btn btn-primary w-25">Submit</button>
+</form>
+{% endblock content%}

@@ -1,0 +1,12 @@
+{% extends "qna/base.html" %}
+{% load static %}
+{% block title %}<title>Delete User | Q&amp;A</title>{% endblock title %}
+{% block content %}
+<form method="post" class="mg-center">
+    {% csrf_token %}
+    <div class="text-muted display-4">Are you sure you want to delete user</div>
+    <div class="card-answer-body overflow-auto display-4">{{user.username}}</div>
+    <input type="submit" name="yes" value="Yes" class="btn mt-4 px-5 btn-danger">
+    <input type="submit" name="no" value="No" class="btn mt-4 px-5 btn-light">
+</form>
+{% endblock content %}

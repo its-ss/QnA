@@ -1,0 +1,43 @@
+{% extends "qna/admin-base.html" %}
+{% block title %}<title>All Questions | Q&amp;A</title>{% endblock title %}
+{% block content %}
+<!-- <ul class="list-group a_lists mg-center">
+    <h1>Questions</h1>
+    {% for question in questions %}
+    <li class="list-group-item"  style="border-radius: 10px;">
+        <a href="{% url 'question' question.id %}" class="h4">{{question.question}}</a>
+        {% if question.status == 'f' %}<i class="far fa-flag"></i>{% endif %}
+        {% if  question.status == 'o' %}<i class="far fa-flag"></i> <i class="far fa-pause-circle"></i>{% endif %}
+    </li>
+    {% endfor %}
+</ul> -->
+<div class="container">
+  <div class="card-cntent">
+    <div class="card" style="background-color:#6f23ad ;">
+    <h1 class="text-center text-white">Question</h1>
+  <table class="table mt-4 text-white table-striped">
+    <thead class="thead-light">
+        <tr>
+          <th scope="col">id</th>
+          <th scope="col">Questions</th>
+          <th scope="col">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for question in questions %}
+        <tr>
+          <th scope="row">{{ forloop.counter }}</th>
+          <td>{{question.question}}
+            {% if question.status == 'f' %}<i class="far fa-flag"></i>{% endif %}
+            {% if  question.status == 'o' %}<i class="far fa-flag"></i> <i class="far fa-pause-circle"></i>{% endif %}
+          </td>
+          <td>
+            <a class="btn btn-primary" href="{% url 'question' question.id %}"><i class="fa fa-eye" aria-hidden="true"></i></a>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+      </div>
+  </div>
+  </div>
+{% endblock content %}

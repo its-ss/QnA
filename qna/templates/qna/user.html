@@ -1,0 +1,46 @@
+{% extends "qna/base.html" %}
+{% block title %}<title>{{profile_user.username}} | Q&amp;A</title>{% endblock title %}
+{% block content %}
+<h1>{{profile_user.username}}</h1>
+<p class="lead">{{profile_user.created_at}}</p>
+<div class="row">
+    <div class="list-group col col-md-6 my-3">
+        <a href="#" style="background-color: #9C19E0;" class="list-group-item list-group-item-action disabled  text-white">
+            <h3>Category</h3>
+        </a>
+        {% for category in profile_user.profile.category.all %}
+        <a href="{% url 'question-categorywise' category.slug %}"
+            class="list-group-item list-group-item-action">{{category}}</a>
+        {% endfor %}
+    </div>
+    <div class="list-group col col-md-6 my-3">
+        <a href="#"  style="background-color: #9C19E0;" class="list-group-item list-group-item-action disabled  text-white">
+            <h3>Role</h3>
+        </a>
+        {% for role in profile_user.profile.role.all %}
+        <a class="list-group-item list-group-item-action"
+            href="{% url 'question-categorywise' role.category.slug %}">{{role}}</a>
+        {% endfor %}
+    </div>
+</div>
+<div class="row">
+    <div class="list-group col-12 col-lg-6 my-3">
+        <a href="#"  style="background-color: #9C19E0;" class="list-group-item list-group-item-action disabled text-white">
+            <h3>Question</h3>
+        </a>
+        {% for question in profile_user.userWhoAskQuestion.all %}
+        <a href="{% url 'question' question.id %}"
+            class="list-group-item list-group-item-action">{{question.question}}</a>
+        {% endfor %}
+    </div>
+    <div class="list-group col-12 col-lg-6 my-3">
+        <a href="#" style="background-color: #9C19E0;" class="list-group-item list-group-item-action disabled text-white">
+            <h3>Answer</h3>
+        </a>
+        {% for answer in profile_user.userWhoAnswerQuestion.all %}
+        <a href="{% url 'question' answer.question.id %}"
+            class="list-group-item list-group-item-action">{{answer.question}}</a>
+        {% endfor %}
+    </div>
+</div>
+{% endblock content %}

@@ -1,0 +1,56 @@
+{% extends "qna/admin-base.html" %}
+{% load static %}
+{% block title %}<title>Edit Category | Q&amp;A</title>{% endblock title %}
+{% block content %}
+
+  
+<section class="">
+  <!-- Jumbotron -->
+  <div class="px-4 py-5 px-md-5 text-center text-lg-start">
+    <div class="container">
+      <div class="row gx-lg-5 align-items-center">
+        <div class="col-lg-6 mb-5 mb-lg-0">
+          <h1 class="my-5 display-3 fw-bold ls-tight">
+            <img src="{% static 'qna/images/logo.png' %}" height="200" width="200" alt=""><br />
+            <span class="text-primary">Edit Category</span>
+          </h1>
+        </div>
+
+        <div class="col-lg-6 mb-5 mb-lg-0">
+          <div class="card">
+            <div class="card-body py-5 px-md-5">
+              <form action="" method="post">
+                  <h1>Edit Category</h1>
+                  {% csrf_token %}
+
+                <div class="form-outline mb-4">
+                  <label for="category">Category </label>
+                  <input type="text" name="category" class="form-control" id="category" aria-describedby="categoryHelp"
+                    placeholder="Enter category" required maxlength="100" value="{{category.category}}">
+                  <small id="categoryHelp" class="help_text">Keep max 100 character longer</small>
+                </div>
+
+                <div class="form-outline mb-4">
+                  <label for="role">Role </label>
+                  <input type="text" name="role" class="form-control" id="role" aria-describedby="roleHelp" placeholder="Enter role"
+                    required maxlength="120" value="{{category.role.role}}">
+                  <small id="roleHelp" class="help_text">Keep max 120 character longer</small>
+                </div>
+
+              {% if error %}
+              <div class="text-warning">{{error}}</div>
+              {% endif %}
+                <button type="submit" class="btn btn-primary btn-block mb-4">
+                  Add Question
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Jumbotron -->
+</section>
+
+{% endblock content %}

@@ -1,0 +1,60 @@
+{% extends "qna/admin-base.html" %}
+{% block title %}<title>All Users | Q&amp;A</title>{% endblock title %}
+{% block content %}
+<!-- <ul class="list-group a_lists mg-center">
+  <h1>Users</h1> {% for user in users %}
+  <li class="list-group-item"><a href="{% url 'qna-user' user.id %}" class="h4">{{user.username}}</a>
+    <div class="btn-group float-right" role="group" aria-label="Basic example">
+      <a href="{% url 'question-deleteuser' user.id %}" class="btn btn-outline-secondary">Delete</a>
+    </div>
+  </li>
+  {% endfor %}
+</ul> -->
+<div class="container">
+  <div class="card-cntent">
+    <div class="card" style="background-color:#6f23ad ;">
+    <h1 class="text-center text-white">User</h1>
+  <table class="table mt-4 text-white table-striped">
+    <thead class="thead-light">
+      <tr>
+        <th scope="col">id</th>
+        <th scope="col">User Name</th>
+        <th scope="col">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+      <tr>
+        <th scope="row">{{ forloop.counter }}</th>
+        <td>{{user.username}}</td>
+        <td>
+          <a class="btn btn-primary" href="{% url 'qna-user' user.id %}"><i class="fa fa-eye" aria-hidden="true"></i></a>
+          <a href="#" data-url="{% url 'question-deleteuser' user.id %}" class="btn btn-danger delete"><i class="fa fa-trash" aria-hidden="true"></i></a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+    </div>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  $(document).ready(function(){
+    $(document).on('click','.delete',function(e){
+    
+     Swal.fire({
+  title: 'Do you want to Delete?',
+  showCancelButton: true,
+  confirmButtonText: 'Delete',
+}).then((result) => {
+  /* Read more about isConfirmed, isDenied below */
+  if (result.isConfirmed) {
+    Swal.fire('Deleted!', '', 'success')
+    var nurl=$(this).attr("data-url");
+    window.location.href=nurl;
+  }
+})
+    });
+  });
+</script>
+{% endblock content %}

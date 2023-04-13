@@ -1,0 +1,205 @@
+{% extends "qna/base.html" %}
+{% block title %}<title>Home | Q&amp;A</title>{% endblock title %}
+{% block head %}
+<style>
+	.card-answer-body {
+		max-height: 240px;
+	}
+</style>
+<script>
+	$(document).ready(function () {
+		$('button').click(function (event) {
+			event.preventDefault();
+		});
+		$("[class*='container']").removeClass("container").addClass("container-fluid");
+		{% if user.is_authenticated %}
+		$(".answer-upvote").click(function (event) {
+			event.preventDefault();
+			$answervotemanager = $(this).siblings('span')[0];
+			$virtualvote = +($($answervotemanager).text());
+			$vote = $($answervotemanager).data("answer-vote");
+			$answerid = $($answervotemanager).data("answer-id");
+			$downvotebtn = $(this).next();
+			$current = this;
+			if ($virtualvote == $vote) {
+				$votescore = 1;
+				$totalvote = $virtualvote + $votescore;
+				$.ajax({
+					type: "POST",
+					url: '{% url 'question-answervotemanager' %}',
+					data: { 'totalvote': $totalvote, 'answerid': $answerid },
+					dataType: 'json',
+					success: function (data) {
+						if (data.voted) {
+							$($answervotemanager).text($totalvote);
+							$($answervotemanager).addClass("bg-warning");
+							$($current).attr("disabled", true);
+							$($downvotebtn).attr("disabled", false);
+							$($answervotemanager).removeClass("bg-danger");
+						}
+						else if (data.error) {
+							alert(data.error);
+						}
+					}
+					});
+	}
+		else if ($virtualvote > $vote) {
+		alert("Already voted");
+	}
+	else {
+		$votescore = 2;
+		$totalvote = $virtualvote + $votescore;
+		$.ajax({
+			type: "POST",
+			url: '{% url 'question-answervotemanager' %}',
+			data: { 'totalvote': $totalvote, 'answerid': $answerid },
+			dataType: 'json',
+			success: function (data) {
+				if (data.voted) {
+					$($answervotemanager).text($totalvote);
+					$($answervotemanager).addClass("bg-warning");
+					$($current).attr("disabled", true);
+					$($downvotebtn).attr("disabled", false);
+					$($answervotemanager).removeClass("bg-danger");
+				}
+				else if (data.error) {
+					alert(data.error);
+				}
+			}
+			});
+		}
+	});
+	$(".answer-downvote").click(function (event) {
+		event.preventDefault();
+		$answervotemanager = $(this).siblings('span')[0];
+		$virtualvote = +($($answervotemanager).text());
+		$vote = $($answervotemanager).data("answer-vote");
+		$answerid = $($answervotemanager).data("answer-id");
+		$upvotebtn = $(this).prev();
+		$current = this;
+		if ($virtualvote == $vote) {
+			$votescore = -1;
+			$totalvote = $virtualvote + $votescore
+			$.ajax({
+				type: "POST",
+				url: '{% url 'question-answervotemanager' %}',
+				data: { 'totalvote': $totalvote, 'answerid': $answerid },
+				dataType: 'json',
+				success: function (data) {
+					if (data.voted) {
+						$($answervotemanager).text($totalvote);
+						$($answervotemanager).addClass("bg-danger");
+						$($current).attr("disabled", true);
+						$($upvotebtn).attr("disabled", false);
+						$($answervotemanager).removeClass("bg-warning");
+					}
+					else if (data.error) {
+						alert(data.error);
+					}
+				}
+					});
+				}
+		else if ($virtualvote < $vote) {
+		alert("Already voted");
+	}
+	else {
+		$votescore = -2;
+		$totalvote = $virtualvote + $votescore
+		$.ajax({
+			type: "POST",
+			url: '{% url 'question-answervotemanager' %}',
+			data: { 'totalvote': $totalvote, 'answerid': $answerid },
+			dataType: 'json',
+			success: function (data) {
+				if (data.voted) {
+					$($answervotemanager).text($totalvote);
+					$($current).attr("disabled", true);
+					$($upvotebtn).attr("disabled", false);
+					$($answervotemanager).addClass("bg-danger");
+					$($answervotemanager).removeClass("bg-warning");
+				}
+				else if (data.error) {
+					alert(data.error);
+				}
+			}
+			});
+		}
+	});
+	{% else %}
+		$(".answer-upvote").click(function (event) {alert("Please login to perform this.")})
+		$(".answer-downvote").click(function (event) {alert("Please login to perform this.")})
+	{% endif %}
+});
+</script>
+{% endblock head %}
+{% block content %}
+<div class="row">
+	<div class="col col-md-3">
+	<aside class="d-none d-md-block position-fixed">
+		<div class="list-group">
+			<a href="#" class="list-group-item list-group-item-action disabled text-dark" style="background-color:#6f23ad ;">
+				<h3 style="color:white;">Trending Category</h3>
+			</a>
+			{% for category in trendingcategories %}
+			
+			<a href="{% url 'question-categorywise' category.slug %}"
+				class="list-group-item list-group-item-action">{{category.category}}</a>
+			{% endfor %}
+		</div>
+		{% if userscategories %}
+		<div class="list-group mt-3" style="border-radius: 10px;">
+			<a href="#" class="list-group-item list-group-item-action disabled  text-dark" style="background-color:#6f23ad ;">
+				<h3 style="color:white;">Category</h3>
+			</a>
+			{% for category in userscategories %}
+			<a href="{% url 'question-categorywise' category.slug %}"
+				class="list-group-item list-group-item-action">{{category.category}}</a>
+			{% endfor %}
+		</div>
+		{% endif %}
+	</aside>
+	</div>
+	<div class="col col-md-9">
+	<main>
+		{% for question in questions %}
+		<div class="card my-3  shadow">
+			<div class="card-header" style="background-color:#6f23ad ;">
+				<ul class="list-inline">
+					{% if question.category.all %}
+					{% for category in question.category.all %}
+					<li class="list-inline-item badge badge-info badge-pills"><a
+							href="{% url 'question-categorywise' category.slug %}" class="text-reset">{{category}}</a>
+							
+					</li>
+					{% endfor %}
+					{% if question.status == 'f' %}<i class="far fa-flag"></i>{% endif %}
+					{% if  question.status == 'o' %}<i class="far fa-flag"></i> <i
+						class="far fa-pause-circle"></i>{% endif %}
+					{% endif %}
+				</ul>
+				<h1><a class="nav-link" href="{% url 'question' question.id %}" style="color:white;">{{question.question}}</a></h1>
+			</div>
+			<div class="card-body card-answer-body overflow-auto">
+				<div class="card-text clearfix">{{question.answer_set.first.answer|safe}}</div>
+			</div>
+			<div class="card-footer" style="background-color:#6f23ad ;">
+				<button type="button" class="btn btn-primary btn-sm answer-upvote">
+					<i class="fas fa-arrow-up"></i>
+				</button>
+				<button type="button" class="btn btn-primary btn-sm answer-downvote">
+					<i class="fas fa-arrow-down"></i>
+				</button>
+				<span data-answer-vote="{{question.answer_set.first.vote}}"
+					data-answer-id="{{question.answer_set.first.id}}">{{question.answer_set.first.vote}}</span>
+				<div class="float-right text-white">
+					<a href="{% url 'qna-user' question.answer_set.first.user.id %}"
+						class="text-reset">@{{question.answer_set.first.user.username}}</a>
+					at {{question.answer_set.first.created_at}}
+				</div>
+			</div>
+		</div>
+		{% endfor %}
+	</main>
+	</div>
+</div>
+{% endblock content %}

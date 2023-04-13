@@ -1,0 +1,5 @@
+dj-database-url==1.0.0
+Django
+django-import-export==2.9.0
+psycopg2-binary
+whitenoise==6.2.0
