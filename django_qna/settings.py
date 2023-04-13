@@ -21,7 +21,7 @@ SECRET_KEY = "d1f-96w0z=ct67s8t0z4z9@9f5)gf!fzd0lg+-3i-#p!w6mo+_"
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = os.environ.get('DEBUG', '') != 'False'
 DEBUG = True
-ALLOWED_HOSTS = ["qna-vk76.onrender.com", "127.0.0.1"]
+ALLOWED_HOSTS = ["q-a.onrender.com", "127.0.0.1"]
 
 # Application definition
 INSTALLED_APPS = [
